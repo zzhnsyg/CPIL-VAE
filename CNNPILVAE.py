@@ -56,7 +56,7 @@ for batch_data, batch_label in train_loader:
     # 将每一个 batch 的指定标签的数据添加到结果列表中
     target_data.append(target_batch_data)
 # 拼接所有的数据
-target_data = torch.cat(target_data, dim=0)#数组形状（num,1,28,28）分别：筛选的标签值的样本数量，通道数，宽，高
+target_data = torch.cat(target_data, dim=0)
 
 if target_data.size(0) >= num_training_samples:
     # 创建随机索引
@@ -69,8 +69,8 @@ print("target_data.shape",target_data.shape)
 model = VGGAutoEncoder(get_configs("vgg16"))
 model.load_state_dict(torch.load(f'../train_vgg/mnist_last_model1.pth'))
 
-model.eval()  # 设置模型为评估模式
-with torch.no_grad():  # 在评估过程中不需要计算梯度
+model.eval()  
+with torch.no_grad(): 
     encoder_output =model.encoder(target_data)
     print("经过卷积之后的形状",encoder_output.shape)
 
@@ -82,8 +82,7 @@ print("选中的图像形状:", selected_images.shape)
 
 X_train = selected_images
 
-X_train_2d = X_train.reshape(X_train.shape[0], -1)  # 每行表示一个观察或样本，每列表示一个特征或变量
-# 打印结果
+X_train_2d = X_train.reshape(X_train.shape[0], -1) 
 print("原始三维数组形状:", X_train.shape)
 print("合并后的二维数组形状:", X_train_2d.shape)
 rank_data = np.linalg.matrix_rank(X_train_2d)
@@ -139,12 +138,12 @@ def Gai_PIL0(InputLayer, input_dim, hidden_dim, layer_idx):
     tempH = InputWeight.dot(InputLayer)
     H1 = ActivationFunc(tempH, actFun, para)
 
-    #更新状态
+    
     layer_idx = layer_idx + 1
     InputLayer = H1
     hidden_dim = InputLayer.shape[1]
     input_dim = InputLayer.shape[0]
-    #保存结果
+    
     vae.append(InputWeight)  # vae{l}.WI = InputWeight
     HiddenO.append(H1)
     return InputLayer, input_dim, hidden_dim, layer_idx
@@ -173,7 +172,6 @@ def Gn_PIL(InputLayer, l):
 def ppcamle(data  , q):
     N, d = data.shape        
     mu = np.mean(data, axis=0)
-    #np.tile(mu, (N, 1))，将向量 mu 在行方向上复制 N 次，在列方向上复制 1 次，最后形状（N,d）
     T = data - np.tile(mu, (N, 1))  # T = data - repmat(mu, N, 1)
     S = T.T.dot(T) / N  # S = T' * T / N
     D, V = np.linalg.eig(S)  # Eigenvalue decomposition
@@ -238,7 +236,7 @@ def H1rec(rec_H1, X_train_2d, lambda0=lambda0):
     tempH = OutputWeight.dot(rec_H1)
     return tempH
 
-start_time = time.time()  # 获取开始时间
+start_time = time.time()  
 for hidden in hidden_size:
     InputLayer, input_dim, hidden_dim, l = Gai_PIL0(InputLayer, input_dim, hidden, l)
     print(f"Layer {l}: shape = {InputLayer.shape}")
@@ -277,21 +275,16 @@ print("训练时间：",end_time-start_time)
 rec_X=rec_X.T.reshape(encoder_output.shape)
 print(rec_X.shape)
 
-if isinstance(rec_X, np.ndarray):  # 检查是否为 NumPy 数组
-    rec_X = torch.from_numpy(rec_X).float()  # 转换为 PyTorch 张量并指定数据类型
-
-# 每个样本的均方误差
-sample_mse = torch.mean((encoder_output - rec_X) ** 2, axis=(1, 2, 3))
-
-print("Per-sample MSE shape:", sample_mse)
+if isinstance(rec_X, np.ndarray):  
+    rec_X = torch.from_numpy(rec_X).float() 
 
 with torch.no_grad():  # 在评估过程中不需要计算梯度
     rec_X=model.decoder(rec_X)
 
-# 将 100 个数据排列成 10x10 的网格
+
 fig, axes = plt.subplots(10, 10, figsize=(15, 15))
 
-# 遍历 sampled_outputs 并将它们显示在子图中
+
 for i, ax in enumerate(axes.flat):
     # 将张量转换为 NumPy 数组并调整维度顺序
     output_image = rec_X[i].permute(1, 2, 0).numpy()
