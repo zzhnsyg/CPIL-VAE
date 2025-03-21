@@ -243,19 +243,10 @@ def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 if __name__ == "__main__":
     input = torch.randn((5, 3, 224, 224))
-
     configs = get_configs('vgg16')
     model = VGGAutoEncoder(configs)
     print(model)
-    for param in model.encoder.conv1.parameters():
-        param.requires_grad =False
-    # 计算参数量
-    total_params = count_parameters(model)
-    print(f"Total trainable parameters: {total_params}")
-
-    # 加载模型权重
-    output = model.encoder(input)
-
+    output = model(input)
     print(output.shape)
 
 
