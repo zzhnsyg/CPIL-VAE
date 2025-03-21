@@ -117,35 +117,6 @@ def ActivationFunc(tempH, ActivationFunction, p):#激活函数
     return H
 
 
-
-
-
-def Gai_PIL0(InputLayer, input_dim, hidden_dim, layer_idx):
-
-    InputWeight = np.random.randn(hidden_dim, input_dim)
-    if hidden_dim >= input_dim:
-        InputWeight = orth(InputWeight)
-    else:
-        InputWeight = orth(InputWeight.T).T
-    # Compute the rank of the matrix InputLayer
-
-    print("Inputweight的形状", InputWeight.shape)
-    matrix_rank = np.linalg.matrix_rank(InputLayer)
-
-    tempH = InputWeight.dot(InputLayer)
-    H1 = ActivationFunc(tempH, actFun, para)
-
-    
-    layer_idx = layer_idx + 1
-    InputLayer = H1
-    hidden_dim = InputLayer.shape[1]
-    input_dim = InputLayer.shape[0]
-    
-    vae.append(InputWeight)  # vae{l}.WI = InputWeight
-    HiddenO.append(H1)
-    return InputLayer, input_dim, hidden_dim, layer_idx
-
-
 def Gn_PIL(InputLayer, l):
     InputLayer_pinv = np.linalg.pinv(InputLayer)
 
