@@ -115,6 +115,31 @@ def ActivationFunc(tempH, ActivationFunction, p):#激活函数
     elif ActivationFunction == 'tanh':
         H = np.np.tanh(tempH)
     return H
+        
+def PIL0(InputLayer, input_dim, hidden_dim, layer_idx):
+
+    InputWeight = np.random.randn(hidden_dim, input_dim)
+    if hidden_dim >= input_dim:
+        InputWeight = orth(InputWeight)
+    else:
+        InputWeight = orth(InputWeight.T).T
+    # Compute the rank of the matrix InputLayer
+
+    print("Inputweight的形状", InputWeight.shape)
+    matrix_rank = np.linalg.matrix_rank(InputLayer)
+
+    tempH = InputWeight.dot(InputLayer)
+    H1 = ActivationFunc(tempH, actFun, para)
+
+    #更新状态
+    layer_idx = layer_idx + 1
+    InputLayer = H1
+    hidden_dim = InputLayer.shape[1]
+    input_dim = InputLayer.shape[0]
+    #保存结果
+    vae.append(InputWeight)  # vae{l}.WI = InputWeight
+    HiddenO.append(H1)
+    return InputLayer, input_dim, hidden_dim, layer_idx
 
 
 def Gn_PIL(InputLayer, l):
@@ -206,7 +231,7 @@ def H1rec(rec_H1, X_train_2d, lambda0=lambda0):
 
 start_time = time.time()  
 for hidden in hidden_size:
-    InputLayer, input_dim, hidden_dim, l = Gai_PIL0(InputLayer, input_dim, hidden, l)
+    InputLayer, input_dim, hidden_dim, l = PIL0(InputLayer, input_dim, hidden, l)
     print(f"Layer {l}: shape = {InputLayer.shape}")
 
 InputLayer, l ,input_dim,hidden_dim= Gn_PIL(InputLayer, l)#l=1
