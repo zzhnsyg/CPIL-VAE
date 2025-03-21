@@ -23,13 +23,9 @@ def train_and_validate():
     train_dataset = MNIST(root='../data/Mnist', train=True, transform=transform, download=True)
     test_dataset = MNIST(root='../data/Mnist', train=False, transform=transform, download=True)
 
-    # # 从训练集中随机抽取 4000 张数据
-    # train_size = 2000
-    # val_size = len(train_dataset) - train_size
-    # train_dataset, _ = random_split(train_dataset, [train_size, val_size])
-    # train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    # # 从训练集中随机抽取 2000 张数据
     num_classes = 10
-    samples_per_class = 1000
+    samples_per_class = 200
     # 获取每个类别的索引
     class_indices = {i: [] for i in range(num_classes)}
     for idx, (_, label) in enumerate(train_dataset):
@@ -58,9 +54,9 @@ def train_and_validate():
     criterion = nn.MSELoss()
 
     # 训练
-    num_epochs = 50
+    num_epochs = 30
 
-    last_model_path = "mnist_last_model1.pth"
+    last_model_path = "mnist_model1.pth"
     for epoch in range(num_epochs):
         # 训练阶段
         model.train()
@@ -105,57 +101,60 @@ def train_and_validate():
 
 # 调用训练和验证函数
 start_time=time.time()
-#train_and_validate()
+train_and_validate()
 end_time =time.time()
-print("训练时间：",end_time-start_time)
+print("train_time：",end_time-start_time)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+###显示图像
 # 数据预处理
-transform = transforms.Compose([
-    transforms.Grayscale(3),
-    transforms.Resize((64, 64)),
-    transforms.ToTensor(),
-    transforms.Normalize((0.5,), (0.5,))
-])
-# 模型初始化
-configs = get_configs('vgg16')
-model = VGGAutoEncoder(configs=configs).to(device)
-model_file = 'mnist_last_model1.pth'
-model.load_state_dict(torch.load(model_file))
-c = []
-# 加载 MNIST 数据集
-train_dataset = MNIST(root='../data/Mnist', train=True, transform=transform, download=True)
-test_dataset = MNIST(root='../data/Mnist', train=False, transform=transform, download=True)
-test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
-# 从训练集中随机抽取 4000 张数据
-train_size = 2000
-val_size = len(train_dataset) - train_size
-train_dataset, _ = random_split(train_dataset, [train_size, val_size])
-
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-with torch.no_grad():  # 在评估过程中不需要计算梯度
-    for inputs, labels in train_loader:
-        inputs, labels = inputs.to(device), labels.to(device)
-        outputs = model(inputs)
-
-        c.append(outputs.cpu())
-
-all_outputs = torch.cat(c, dim=0)
-print(all_outputs.shape)
-# 从 all_outputs 中取出前 100 个数据
-sampled_outputs = all_outputs[:100]
-# 将 100 个数据排列成 10x10 的网格
-fig, axes = plt.subplots(10, 10, figsize=(15, 15))
-
-# 遍历 sampled_outputs 并将它们显示在子图中
-for i, ax in enumerate(axes.flat):
-    # 将张量转换为 NumPy 数组并调整维度顺序
-    output_image = sampled_outputs[i].permute(1, 2, 0).numpy()
-    # 显示图像
-    ax.imshow(output_image,cmap='gray')
-    ax.axis('off')  # 隐藏坐标轴
-
-# 调整子图间距
-plt.subplots_adjust(wspace=0.1, hspace=0.1)
-# 显示图像网格
-plt.show()
+# transform = transforms.Compose([
+#     transforms.Grayscale(3),
+#     transforms.Resize((64, 64)),
+#     transforms.ToTensor(),
+#     transforms.Normalize((0.5,), (0.5,))
+# ])
+# # 模型初始化
+# configs = get_configs('vgg16')
+# model = VGGAutoEncoder(configs=configs).to(device)
+# model_file = 'mnist_model1.pth'
+# model.load_state_dict(torch.load(model_file))
+# c = []
+# # 加载 MNIST 数据集
+# train_dataset = MNIST(root='../data/Mnist', train=True, transform=transform, download=True)
+# test_dataset = MNIST(root='../data/Mnist', train=False, transform=transform, download=True)
+# test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+# # 从训练集中随机抽取 4000 张数据
+# train_size = 2000
+# val_size = len(train_dataset) - train_size
+# train_dataset, _ = random_split(train_dataset, [train_size, val_size])
+#
+# train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+# with torch.no_grad():  # 在评估过程中不需要计算梯度
+#     for inputs, labels in train_loader:
+#         inputs, labels = inputs.to(device), labels.to(device)
+#         outputs = model(inputs)
+#
+#         c.append(outputs.cpu())
+#
+# all_outputs = torch.cat(c, dim=0)
+# print(all_outputs.shape)
+# # 从 all_outputs 中取出前 100 个数据
+# sampled_outputs = all_outputs[:100]
+# # 将 100 个数据排列成 10x10 的网格
+# fig, axes = plt.subplots(10, 10, figsize=(15, 15))
+#
+# # 遍历 sampled_outputs 并将它们显示在子图中
+# for i, ax in enumerate(axes.flat):
+#     # 将张量转换为 NumPy 数组并调整维度顺序
+#     output_image = sampled_outputs[i].permute(1, 2, 0).numpy()
+#     # 显示图像
+#     ax.imshow(output_image,cmap='gray')
+#     ax.axis('off')  # 隐藏坐标轴
+#
+# # 调整子图间距
+# plt.subplots_adjust(wspace=0.1, hspace=0.1)
+# # 显示图像网格
+# plt.show()
