@@ -64,10 +64,8 @@ if target_data.size(0) >= num_training_samples:
     # 根据索引抽取数据
     target_data = target_data[indices]
 print("target_data.shape",target_data.shape)
-#model=Autoencoder()
-#model.load_state_dict(torch.load(f'../saved_models/MnistModel/SimpleAE/COV-32/model_epoch_96.pth'))
 model = VGGAutoEncoder(get_configs("vgg16"))
-model.load_state_dict(torch.load(f'../train_vgg/mnist_last_model1.pth'))
+model.load_state_dict(torch.load(f'../train_vgg/mnist_model1.pth'))
 
 model.eval()  
 with torch.no_grad(): 
@@ -77,7 +75,6 @@ with torch.no_grad():
 
 
 selected_images = encoder_output.numpy()
-# 打印结果
 print("选中的图像形状:", selected_images.shape)
 
 X_train = selected_images
