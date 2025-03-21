@@ -44,10 +44,9 @@ test_loader = torch.utils.data.DataLoader(
     batch_size=batch_size, shuffle=False)
 # 遍历 DataLoader 中的每一个 batch
 target_data=[]
-#这个for循环就是为了筛选出数据集中和target_label指定的数字相等的数据
-#比如说target_label=8就是筛选出数据集中所有为8的手写数据集
+
 for batch_data, batch_label in train_loader:
-    # 筛选和过滤指定标签的数据
+    
     mask = torch.eq(batch_label, value_to_find)
 
     indices = torch.nonzero(mask).squeeze()
@@ -58,7 +57,7 @@ for batch_data, batch_label in train_loader:
     target_data.append(target_batch_data)
 # 拼接所有的数据
 target_data = torch.cat(target_data, dim=0)#数组形状（num,1,28,28）分别：筛选的标签值的样本数量，通道数，宽，高
-# 如果筛选出的数据量多于需要的数量，随机抽样
+
 if target_data.size(0) >= num_training_samples:
     # 创建随机索引
     indices = torch.randperm(target_data.size(0))[:num_training_samples]
@@ -76,13 +75,13 @@ with torch.no_grad():  # 在评估过程中不需要计算梯度
     print("经过卷积之后的形状",encoder_output.shape)
 
 
-# 使用切片操作选中指定序号的图像
+
 selected_images = encoder_output.numpy()
 # 打印结果
 print("选中的图像形状:", selected_images.shape)
 
 X_train = selected_images
-# 将后两维合并成一个二维数组，保持第一维不变
+
 X_train_2d = X_train.reshape(X_train.shape[0], -1)  # 每行表示一个观察或样本，每列表示一个特征或变量
 # 打印结果
 print("原始三维数组形状:", X_train.shape)
@@ -92,9 +91,6 @@ print("输入的秩：", rank_data)
 input_dim = X_train_2d.shape[1]  # dim of input data
 hidden_dim = X_train_2d.shape[0]  # Gn-PIL dim of H
 
-# Normalization
-#scaler = MinMaxScaler(feature_range=(0, 1))  # 映射到 0-1 之间
-#X_train_2d = scaler.fit_transform(X_train_2d)
 InputLayer = X_train_2d.T
 print("InputLayer's shape:", InputLayer.shape)
 
@@ -175,28 +171,22 @@ def Gn_PIL(InputLayer, l):
     return H2, l, num, hidden_size
 
 def ppcamle(data  , q):
-    # data: 输入数据，N行d列，其中N表示样本数量，d表示每个样本的特征维度
-    # q: 潜在空间的维度，即要降到的维度
-    N, d = data.shape         # 获取输入数据的形状，N表示样本数量，d表示特征维度
-    mu = np.mean(data, axis=0)# 计算输入数据的均值向量，对每列求均值，得到长度为d的均值向量
-    # 中心化操作，减去均值向量，得到中心化后的数据矩阵T
+    N, d = data.shape        
+    mu = np.mean(data, axis=0)
     #np.tile(mu, (N, 1))，将向量 mu 在行方向上复制 N 次，在列方向上复制 1 次，最后形状（N,d）
     T = data - np.tile(mu, (N, 1))  # T = data - repmat(mu, N, 1)
-    # 计算中心化后的数据矩阵的协方差矩阵S，S = T的转置 * T / N
     S = T.T.dot(T) / N  # S = T' * T / N
-    # 对协方差矩阵进行特征值分解，得到特征值D和特征向量V
     D, V = np.linalg.eig(S)  # Eigenvalue decomposition
-    sorted_indices = np.argsort(D)[::-1]  # 对于D的排序，确保它们按降序排序，以确保最大的特征值在前面，并返回排序后的索引
-    D = D[sorted_indices] # 根据排序后的索引重新排列特征值D
-    V = V[:, sorted_indices]# 根据排序后的索引重新排列特征向量V
-    sigma = np.sum(D[(q + 1):]) / (d - q) #计算噪声方差sigma
-    Uq = V[:, :q]# 提取前q个特征向量，构成投影矩阵Uq
-    lambda_q = D[:q]# 提取前q个特征值
-    w = Uq.dot(np.sqrt(np.diag(lambda_q) - sigma * np.identity(q))) # 计算投影矩阵w
-    C = w.dot(w.T) + sigma * np.identity(d)# 计算协方差矩阵C
-    L = -N * (d * np.log(2 * np.pi) + np.log(np.linalg.det(C)) + np.trace(np.linalg.solve(C, S)) )/ 2 # 计算最终的似然函数值L，用于模型评估
-    return mu, w, sigma, L# 返回均值mu、投影矩阵w、噪声方差sigma和似然函数值L
-
+    sorted_indices = np.argsort(D)[::-1]  
+    D = D[sorted_indices] 
+    V = V[:, sorted_indices]
+    sigma = np.sum(D[(q + 1):]) / (d - q) 
+    Uq = V[:, :q]
+    lambda_q = D[:q]
+    w = Uq.dot(np.sqrt(np.diag(lambda_q) - sigma * np.identity(q))) 
+    C = w.dot(w.T) + sigma * np.identity(d)
+    L = -N * (d * np.log(2 * np.pi) + np.log(np.linalg.det(C)) + np.trace(np.linalg.solve(C, S)) )/ 2 
+    return mu, w, sigma, L
 def ppca(H2, l, latent_dim=latent_dim):
     mu, w, sigma, L = ppcamle(H2, latent_dim)
     print(w.shape)#(1000, 8)
