@@ -4,3 +4,12 @@ This project contains the implementation code of the paper "Content Generation M
 
 ## Article Model
 ![model](png/model.png)
+
+## Requirements
+- Linux and Windows are supported.
+- 64-bit Python 3.8 and PyTorch 1.10.1.
+- CUDA toolkit 11.1 or later. Use at least version 11.1
+
+## Runing the Code
+cd pytorch
+python CNNPILVAE.py
