@@ -14,7 +14,7 @@ from  model.UNET import UNET_AutoEncoder
 from model.GAI_model2 import CovNet
 from model.model import Autoencoder
 import time
-hidden_size = [2000]  # 预定义隐藏层神经元数量
+hidden_size = [2000]  
 latent_dim = 16  # dim of Z   8
 MAX_EN_LAYER = len(hidden_size)
 mean_value = 0
@@ -26,8 +26,8 @@ vae = []
 HiddenO = []
 l = 1
 batch_size=64
-value_to_find =9 #查找的索引值
-num_training_samples = 2000 # 训练样本量
+value_to_find =9 
+num_training_samples = 2000 
 
 transform=transforms.Compose([
         transforms.Grayscale(3),
@@ -42,7 +42,7 @@ train_loader = torch.utils.data.DataLoader(
 test_loader = torch.utils.data.DataLoader(
     datasets.MNIST('../data/Mnist', train=False, transform=transform),
     batch_size=batch_size, shuffle=False)
-# 遍历 DataLoader 中的每一个 batch
+
 target_data=[]
 
 for batch_data, batch_label in train_loader:
@@ -51,17 +51,13 @@ for batch_data, batch_label in train_loader:
 
     indices = torch.nonzero(mask).squeeze()
 
-    target_batch_data = torch.index_select(batch_data, 0, indices)
-
-    # 将每一个 batch 的指定标签的数据添加到结果列表中
+    target_batch_data = torch.index_select(batch_data, 0, indices)   
     target_data.append(target_batch_data)
-# 拼接所有的数据
+
 target_data = torch.cat(target_data, dim=0)
 
-if target_data.size(0) >= num_training_samples:
-    # 创建随机索引
-    indices = torch.randperm(target_data.size(0))[:num_training_samples]
-    # 根据索引抽取数据
+if target_data.size(0) >= num_training_samples: 
+    indices = torch.randperm(target_data.size(0))[:num_training_samples]   
     target_data = target_data[indices]
 print("target_data.shape",target_data.shape)
 model = VGGAutoEncoder(get_configs("vgg16"))
@@ -70,20 +66,17 @@ model.load_state_dict(torch.load(f'../train_vgg/mnist_model1.pth'))
 model.eval()  
 with torch.no_grad(): 
     encoder_output =model.encoder(target_data)
-    print("经过卷积之后的形状",encoder_output.shape)
+   
 
 
 
 selected_images = encoder_output.numpy()
-print("选中的图像形状:", selected_images.shape)
+
 
 X_train = selected_images
 
 X_train_2d = X_train.reshape(X_train.shape[0], -1) 
-print("原始三维数组形状:", X_train.shape)
-print("合并后的二维数组形状:", X_train_2d.shape)
 rank_data = np.linalg.matrix_rank(X_train_2d)
-print("输入的秩：", rank_data)
 input_dim = X_train_2d.shape[1]  # dim of input data
 hidden_dim = X_train_2d.shape[0]  # Gn-PIL dim of H
 
@@ -91,7 +84,7 @@ InputLayer = X_train_2d.T
 print("InputLayer's shape:", InputLayer.shape)
 
 
-def ActivationFunc(tempH, ActivationFunction, p):#激活函数
+def ActivationFunc(tempH, ActivationFunction, p):
     if ActivationFunction == 'relu':
         #         tempH[tempH <= 0] = 0
         #         tempH[tempH > 0] = tempH
@@ -125,18 +118,15 @@ def PIL0(InputLayer, input_dim, hidden_dim, layer_idx):
         InputWeight = orth(InputWeight.T).T
     # Compute the rank of the matrix InputLayer
 
-    print("Inputweight的形状", InputWeight.shape)
+   
     matrix_rank = np.linalg.matrix_rank(InputLayer)
 
     tempH = InputWeight.dot(InputLayer)
-    H1 = ActivationFunc(tempH, actFun, para)
-
-    #更新状态
+    H1 = ActivationFunc(tempH, actFun, para)    
     layer_idx = layer_idx + 1
     InputLayer = H1
     hidden_dim = InputLayer.shape[1]
     input_dim = InputLayer.shape[0]
-    #保存结果
     vae.append(InputWeight)  # vae{l}.WI = InputWeight
     HiddenO.append(H1)
     return InputLayer, input_dim, hidden_dim, layer_idx
@@ -147,10 +137,8 @@ def Gn_PIL(InputLayer, l):
 
     # Compute the rank of the matrix InputLayer
     matrix_rank = np.linalg.matrix_rank(InputLayer_pinv)
-    # 生成具有指定均值和标准差的随机数，大小与 InputLayer_pinv 相同
     random_noise = np.random.normal(mean_value, sig, size=InputLayer_pinv.shape)
 
-    # 将随机噪声添加到 InputLayer_pinv 中
     InputLayer_pinv = InputLayer_pinv + random_noise
     tempH = InputLayer_pinv.dot(InputLayer)
     H2 = ActivationFunc(tempH, actFun, para)
@@ -183,7 +171,7 @@ def ppca(H2, l, latent_dim=latent_dim):
     print(w.shape)#(1000, 8)
     a=np.linalg.solve(w.T.dot(w) + sigma * np.identity(latent_dim), w.T)
     print(a.shape)
-    # 计算 Z  Z 是一个 (latent_dim, num_trainingSamples) 的矩阵
+    
     # Z = np.linalg.solve(w.T.dot(w) + sigma * np.identity(latent_dim), w.T).dot(
     #     H2 - np.tile(mu.T, (num_training_samples, 1)).T)
     Z = np.linalg.solve(w.T.dot(w) + sigma * np.identity(latent_dim), w.T).dot(
@@ -192,7 +180,7 @@ def ppca(H2, l, latent_dim=latent_dim):
     l = l + 1
     return Z, l, sigma, w, mu, L
 
-def Zrec(Z, H2, l, lambda0=lambda0):#用于重构潜在空间中的数据
+def Zrec(Z, H2, l, lambda0=lambda0):
     ZZT = Z.dot(Z.T)
     OutputWeight = H2.dot(Z.T).dot(np.linalg.pinv(ZZT + lambda0 * np.eye(latent_dim)))
     vae.append(OutputWeight)
@@ -208,7 +196,7 @@ def H2rec(tempH, l, dl,hidden_dim,lambda0=lambda0 ):
 
     eye_matrix = lambda0 * np.eye(hidden_dim)#(1000, 1000)
 
-    #     OutputWeight = HiddenO[dl - 1].dot(tempH_transpose) / (tempHHT + eye_matrix)
+    #OutputWeight = HiddenO[dl - 1].dot(tempH_transpose) / (tempHHT + eye_matrix)
     OutputWeight = (HiddenO[dl - 1].dot(tempH_transpose)).dot(np.linalg.pinv(tempHHT + eye_matrix))
     vae.append(OutputWeight)  # 5
 
@@ -223,9 +211,7 @@ def H1rec(rec_H1, X_train_2d, lambda0=lambda0):
     lambda_eye = lambda0 * np.eye(hidden_dim)
 
     OutputWeight = (X_train_2d.T.dot(rec_H1.T)).dot(np.linalg.pinv(rec_H1H1T + lambda_eye))
-    vae.append(OutputWeight)  # 6
-
-    # 计算 tempX
+    vae.append(OutputWeight)  # 6   
     tempH = OutputWeight.dot(rec_H1)
     return tempH
 
@@ -242,15 +228,11 @@ print("H1",InputLayer.shape,"l",l,"input_dim",input_dim)
 Y = InputLayer.T #(100, 1000)
 print("Y",Y.shape)#(1000, 1000)
 Z, l, sigma,w,mu,L = ppca(Y, l)
-print("降维后的形状",Z.shape)  #torch.Size([15, 5851])
-
 
 rec_H2, l = Zrec(Z, InputLayer, l)
 print(rec_H2.shape)
 print(l)#6
 
-for hidden in HiddenO:
-    print("hidden",hidden.shape)
 
 dl = l - 4 # 2
 while dl > 0:
@@ -261,33 +243,27 @@ while dl > 0:
 rec_H1=rec_H2
 print(rec_H1.shape)
 rec_X = H1rec(rec_H1, X_train_2d)
-# 更新 rec_X
 print(rec_X.shape)
 end_time=time.time()
-print("训练时间：",end_time-start_time)
 rec_X=rec_X.T.reshape(encoder_output.shape)
 print(rec_X.shape)
 
 if isinstance(rec_X, np.ndarray):  
     rec_X = torch.from_numpy(rec_X).float() 
 
-with torch.no_grad():  # 在评估过程中不需要计算梯度
+with torch.no_grad():  
     rec_X=model.decoder(rec_X)
 
 
 fig, axes = plt.subplots(10, 10, figsize=(15, 15))
 
 
-for i, ax in enumerate(axes.flat):
-    # 将张量转换为 NumPy 数组并调整维度顺序
-    output_image = rec_X[i].permute(1, 2, 0).numpy()
-    # 显示图像
+for i, ax in enumerate(axes.flat):    
+    output_image = rec_X[i].permute(1, 2, 0).numpy()  
     ax.imshow(output_image,cmap='gray')
-    ax.axis('off')  # 隐藏坐标轴
+    ax.axis('off') 
 
-# 调整子图间距
 plt.subplots_adjust(wspace=0.1, hspace=0.1)
-# 显示图像网格
 plt.show()
 
 
