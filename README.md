@@ -3,7 +3,9 @@
 This project contains the implementation code of the paper "Content Generation Model Based on Pseudo-Inverse Collaborative Learning System". The provided code is implemented based on Pytorch framework. So that researchers and developers can use it.
 
 ## Article Model
-自编码器模型预训练的模型权重https://drive.google.com/file/d/1WwJiQ1kBcNCZ37F6PJ_0bIL0ZeU3_sV8/view?usp=drive_link
+You can download the pretrained weights for the autoencoder model from the following link: https://drive.google.com/file/d/1WwJiQ1kBcNCZ37F6PJ_0bIL0ZeU3_sV8/view?usp=drive_link
+
+Make sure to place the downloaded weights in the appropriate directory as specified in the configuration or loading script.
 ![model](png/model.png)
 
 ## Requirements
