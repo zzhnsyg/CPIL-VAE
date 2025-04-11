@@ -12,4 +12,6 @@ This project contains the implementation code of the paper "Content Generation M
 
 ## Runing the Code
 cd pytorch
+
+```python
 python CNNPILVAE.py
