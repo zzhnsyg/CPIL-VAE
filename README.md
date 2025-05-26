@@ -1,6 +1,6 @@
 # CPIL-VAE
-# Content Generation Model Based on Pseudo-Inverse Collaborative Learning System
-This project contains the implementation code of the paper "AVAEModelwith Convolutional Encoding and Pseudoinverse Learning". The provided code is implemented based on Pytorch framework. So that researchers and developers can use it.
+# Hybrid Variational Autoencoder With Efficient Closed-Form Pseudoinverse Learning
+This project contains the implementation code of the paper "Hybrid Variational Autoencoder With Efficient Closed-Form Pseudoinverse Learning". The provided code is implemented based on Pytorch framework. So that researchers and developers can use it.
 
 ## Article Model
 You can download the pretrained weights for the autoencoder model from the following link: https://drive.google.com/file/d/1WwJiQ1kBcNCZ37F6PJ_0bIL0ZeU3_sV8/view?usp=drive_link
