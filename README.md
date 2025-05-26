@@ -8,6 +8,8 @@ You can download the pretrained weights for the autoencoder model from the follo
 Make sure to place the downloaded weights in the appropriate directory as specified in the configuration or loading script.
 ![model](png/model.png)
 
+Hyperparameter.pdf is the parameter of the baseline model
+
 ## Requirements
 - Linux and Windows are supported.
 - 64-bit Python 3.8 and PyTorch 1.10.1.
